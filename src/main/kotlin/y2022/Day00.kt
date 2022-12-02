@@ -1,4 +1,4 @@
-package y2021
+package y2022
 
 object Day00 {
 
