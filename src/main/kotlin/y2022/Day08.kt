@@ -11,7 +11,11 @@ object Day08 {
     }
 
     fun part2(input: List<String>): Int {
-        return 0
+        val field = readField(input)
+        checkVisibility(field)
+
+        return field.flatten()
+            .maxOf {it.score}
     }
 
     private fun readField(input: List<String>): Array<Array<Cell>> = Array(input.size) { rowIndex ->
@@ -39,19 +43,30 @@ object Day08 {
 
     private fun checkVisibility(
         field: Array<Array<Cell>>, iRange: IntProgression, jRange: IntProgression,
-        firstX: Boolean, visibilitySetter: (Cell) -> Unit
-    ) {
+        firstX: Boolean, visibleSetter: (Cell) -> Unit) {
         for (j in jRange) {
             var maxHeight = -1
+            val visitedHeights = ArrayDeque<Int>()
 
             for (i in iRange) {
                 val cell = if (firstX) field[j][i] else field[i][j]
                 if (cell.height > maxHeight) {
-                    visibilitySetter(cell)
+                    visibleSetter(cell)
                     maxHeight = cell.height
                 }
+                cell.score *= calculateDistance(cell.height, visitedHeights)
+                visitedHeights.addFirst(cell.height)
             }
         }
+    }
+
+    private fun calculateDistance(height: Int, visitedHeights: List<Int>): Int {
+        var distance = 0
+        for (visitedHeight in visitedHeights) {
+            distance++
+            if (visitedHeight >= height) break
+        }
+        return distance
     }
 
     data class Cell(
@@ -59,7 +74,8 @@ object Day08 {
         var leftVisible: Boolean = false,
         var topVisible: Boolean = false,
         var rightVisible: Boolean = false,
-        var botVisible: Boolean = false
+        var botVisible: Boolean = false,
+        var score: Int = 1
     ) {
         val visible get() = leftVisible || topVisible || rightVisible || botVisible
     }
